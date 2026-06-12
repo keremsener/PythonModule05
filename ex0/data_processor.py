@@ -1,5 +1,5 @@
 import abc
-import typing
+from typing import Any, cast
 
 LogDict = dict[str, str]
 
@@ -10,11 +10,11 @@ class DataProcessor(abc.ABC):  # Ana classımız
         self.counter: int = 0
 
     @abc.abstractmethod
-    def validate(self, data: typing.Any) -> bool:
+    def validate(self, data: Any) -> bool:
         pass
 
     @abc.abstractmethod
-    def ingest(self, data: typing.Any) -> None:
+    def ingest(self, data: Any) -> None:
         pass
 
     def output(self) -> tuple[int, str]:
@@ -26,7 +26,7 @@ class DataProcessor(abc.ABC):  # Ana classımız
 
 class NumericProcessor(DataProcessor):
 
-    def validate(self, data: typing.Any) -> bool:
+    def validate(self, data: Any) -> bool:
         if type(data) in (int, float):  # int veya floatsa direkt true döndür
             return True
 
@@ -54,7 +54,7 @@ class NumericProcessor(DataProcessor):
 
 class TextProcessor(DataProcessor):
 
-    def validate(self, data: typing.Any) -> bool:
+    def validate(self, data: Any) -> bool:
         if type(data) is str:  # türü string ise true döndür işi bitir
             return True
 
@@ -73,12 +73,12 @@ class TextProcessor(DataProcessor):
 
         if type(data) is list:  # listse
             # Mypy müfettişine bu datanın kesinlikle bir list[str] olduğunu dikte et (Mypy'ı sustur).
-            list_data = typing.cast(list[str], data)
+            list_data = cast(list[str], data)
             for item in list_data:  # tüm list_data'yı sıraya ekle
                 self.storage.append((self.counter, item))
                 self.counter += 1  # sayacı 1 artır
         else:
-            str_data = typing.cast(str, data)  # list değilse tek başınadır
+            str_data = cast(str, data)  # list değilse tek başınadır
             self.storage.append((self.counter, str_data)
                                 )  # direkt listeye ekle
             self.counter += 1  # sayacı 1 artır
@@ -86,7 +86,7 @@ class TextProcessor(DataProcessor):
 
 class LogProcessor(DataProcessor):
 
-    def validate(self, data: typing.Any) -> bool:
+    def validate(self, data: Any) -> bool:
         if type(data) is dict:  # dictinory ise
             if "log_level" in data and "log_message" in data:  # data'da log level ve log_message varsa
                 if (type(data["log_level"]) is str and  # log level ve log message str ise
@@ -119,7 +119,7 @@ class LogProcessor(DataProcessor):
             raise ValueError("Improper log data")  # hata fırlat
         if type(data) is list:  # data listse
             # Mypy kısmasın diye list olduğunu doğrula
-            list_data = typing.cast(list[LogDict], data)
+            list_data = cast(list[LogDict], data)
 
             for item in list_data:  # list_data'daki tüm itemler için
                 # Sözlüğün içinden log_level değerini çek (örn: "ERROR")
@@ -133,7 +133,7 @@ class LogProcessor(DataProcessor):
                 self.counter += 1  # sayacı 1 artır
 
         else:
-            dict_data = typing.cast(LogDict, data)
+            dict_data = cast(LogDict, data)
             lvl = dict_data['log_level']
             msg = dict_data['log_message']
             formatted_log = f"{lvl}: {msg}"
