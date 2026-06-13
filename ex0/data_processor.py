@@ -25,112 +25,104 @@ class DataProcessor(abc.ABC):  # Ana classımız
 
 
 class NumericProcessor(DataProcessor):
-
     def validate(self, data: typing.Any) -> bool:
-        if type(data) in (int, float):  # int veya floatsa direkt true döndür
+        flag = False
+        if type(data) in (int, float):
             return True
-
-        if type(data) is list:  # listse
-            if len(data) == 0:  # boşsa false döndür
+        if type(data) is list:
+            if len(data) == 0:
                 return False
-            # Liste boş değilse, içindeki BÜTÜN elemanların teker teker int veya float olup OLMADIĞINI KONTROL ET
-            return all(type(item) in (int, float) for item in data)
-        return False  # hiçbiri değilse de false döndür
+            for item in data:
+                if type(item) in (int, float):
+                    flag = True
+                else:
+                    flag = False
+                    return flag
+            return flag
+        return flag
 
     def ingest(self, data: int | float | list[int | float]) -> None:
-        # boş dönmüşse yani yukardan False dönmüşse hata gönder
         if not self.validate(data):
             raise ValueError("Improper numeric data")
-        if type(data) is list:  # eğerki list dönmüşse
-            for item in data:
-                # tüm dataları str'ye çevir sıraya ekle
+        if type(data) is list:
+            list_data = typing.cast(list[int | float], data)
+            for item in list_data:
                 self.storage.append((self.counter, str(item)))
-                self.counter += 1  # sayacı 1 artır
+                self.counter += 1
         else:
-            # liste değilse direkt data'yı str'ye çevir ve listeye ekle
             self.storage.append((self.counter, str(data)))
-            self.counter += 1  # sayacı 1 artır
+            self.counter += 1
 
 
 class TextProcessor(DataProcessor):
-
     def validate(self, data: typing.Any) -> bool:
-        if type(data) is str:  # türü string ise true döndür işi bitir
+        flag = False
+        if type(data) is str:
             return True
-
-        if type(data) is list:  # listeyse
-            if len(data) == 0:  # boşsa false döndür
+        if type(data) is list:
+            if len(data) == 0:
                 return False
-            # Liste boş değilse, içindeki BÜTÜN elemanların teker teker str olup OLMADIĞINI KONTROL ET.
-            return all(type(item) is str for item in data)
-
-        return False  # hiçbiri değilse false döndür
+            for item in data:
+                if type(item) is str:
+                    flag = True
+                else:
+                    flag = False
+                    return flag
+            return flag
+        return flag
 
     def ingest(self, data: str | list[str]) -> None:
         if not self.validate(data):
-            # yukardan False dönmüşse hata fırlat
             raise ValueError("Improper text data")
 
-        if type(data) is list:  # listse
-            # Mypy müfettişine bu datanın kesinlikle bir list[str] olduğunu dikte et (Mypy'ı sustur).
+        if type(data) is list:
             list_data = typing.cast(list[str], data)
-            for item in list_data:  # tüm list_data'yı sıraya ekle
+            for item in list_data:
                 self.storage.append((self.counter, item))
-                self.counter += 1  # sayacı 1 artır
+                self.counter += 1
         else:
-            str_data = typing.cast(str, data)  # list değilse tek başınadır
-            self.storage.append((self.counter, str_data)
-                                )  # direkt listeye ekle
-            self.counter += 1  # sayacı 1 artır
+            str_data = typing.cast(str, data)
+            self.storage.append((self.counter, str_data))
+            self.counter += 1
 
 
 class LogProcessor(DataProcessor):
-
     def validate(self, data: typing.Any) -> bool:
-        if type(data) is dict:  # dictinory ise
-            if "log_level" in data and "log_message" in data:  # data'da log level ve log_message varsa
-                if (type(data["log_level"]) is str and  # log level ve log message str ise
+        flag = False
+        if type(data) is dict:
+            if "log_level" in data and "log_message" in data:
+                if (type(data["log_level"]) is str and
                         type(data["log_message"]) is str):
-                    return True  # true döndür
-            return False  # data'da log level veya log_message yoksa false döndür
-
-        if type(data) is list:  # list ise
-            if len(data) == 0:  # list ama boşsa
-                return False  # false döndür
-
+                    return True
+        if type(data) is list:
+            if len(data) == 0:
+                return False
             for item in data:
-                if type(item) is not dict:  # dict değilse false döndür
-                    return False
+                if type(item) is not dict:
+                    return flag
+                if "log_level" not in item or "log_message" not in item:
+                    return flag
 
-                if "log_level" not in item or "log_message" not in item:  # log level veya log_message yoksa
-                    return False  # false döndür
-
-                # Bu anahtarlar var ama değerleri string değilse
                 if type(item["log_level"]) is not str or type(
                         item["log_message"]) is not str:
-                    return False  # false döndür
-
-            # Hiçbir sorun yoksa
-            return True  # True döndür
-        return False  # list değilse false döndür
+                    return flag
+            flag = True
+            return flag
+        return flag
 
     def ingest(self, data: LogDict | list[LogDict]) -> None:
-        if not self.validate(data):  # yukarıdan false dönmüse
-            raise ValueError("Improper log data")  # hata fırlat
-        if type(data) is list:  # data listse
-            # Mypy kısmasın diye list olduğunu doğrula
+        if not self.validate(data):
+            raise ValueError("Improper log data")
+        if type(data) is list:
             list_data = typing.cast(list[LogDict], data)
 
-            for item in list_data:  # list_data'daki tüm itemler için
-                # Sözlüğün içinden log_level değerini çek (örn: "ERROR")
+            for item in list_data:
                 lvl = item['log_level']
-                # Sözlüğün içinden mesajı çek (örn: "Sistem çöktü")
                 msg = item['log_message']
-                # İkisini araya ':' koyarak tek bir string yap ("ERROR: Sistem çöktü")
                 formatted_log = f"{lvl}: {msg}"
                 self.storage.append(
-                    (self.counter, formatted_log))  # sıraya ekle
-                self.counter += 1  # sayacı 1 artır
+                    (self.counter, formatted_log))
+                self.counter += 1
 
         else:
             dict_data = typing.cast(LogDict, data)
@@ -153,6 +145,14 @@ if __name__ == "__main__":
     # Doğrulama testleri
     print(f"Trying to validate input '42': {num_proc.validate(42)}")
     print(f"Trying to validate input 'Hello': {num_proc.validate('Hello')}")
+
+    # EXCEPTION YAKALAMA
+    print("Test invalid ingestion of string 'foo' without prior validation:")
+    try:
+        # mypy burada bilerek kızacak, subject bunu istiyor ("leave you with a mypy warning, on purpose")
+        num_proc.ingest("foo")  # type: ignore
+    except Exception as e:
+        print(f"Got exception: {e}")
 
     # Geçerli sayı listesini sisteme yedirme
     numeric_data: list[int | float] = [1, 2, 3, 4, 5]
