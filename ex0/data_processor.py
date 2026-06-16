@@ -4,7 +4,7 @@ import typing
 LogDict = dict[str, str]
 
 
-class DataProcessor(abc.ABC):  # Ana classımız
+class DataProcessor(abc.ABC):
     def __init__(self) -> None:
         self.storage: list[tuple[int, str]] = []
         self.counter: int = 0
@@ -134,42 +134,31 @@ class LogProcessor(DataProcessor):
 
 
 if __name__ == "__main__":
-    print("=== Code Nexus Data Processor ===")
+    print("=== Code Nexus Data Processor ===\n")
 
-    # -------------------------------------------------------------------------
-    # 1. NUMERIC PROCESSOR TESTLERİ
-    # -------------------------------------------------------------------------
-    print("Testing Numeric Processor.")
+    print("Testing Numeric Processor...")
     num_proc = NumericProcessor()
 
-    # Doğrulama testleri
     print(f"Trying to validate input '42': {num_proc.validate(42)}")
     print(f"Trying to validate input 'Hello': {num_proc.validate('Hello')}")
 
-    # EXCEPTION YAKALAMA
     print("Test invalid ingestion of string 'foo' without prior validation:")
     try:
-        # mypy burada bilerek kızacak, subject bunu istiyor ("leave you with a mypy warning, on purpose")
         num_proc.ingest("foo")  # type: ignore
     except Exception as e:
         print(f"Got exception: {e}")
 
-    # Geçerli sayı listesini sisteme yedirme
     numeric_data: list[int | float] = [1, 2, 3, 4, 5]
     print(f"Processing data: {numeric_data}")
     num_proc.ingest(numeric_data)
 
-    # FIFO sırasına göre ilk 3 elemanı depodan çekip ekrana basma
     print("Extracting 3 values...")
     for _ in 0, 1, 2:
         rank, val = num_proc.output()
-        print(f"Numeric value {rank}:")
+        print(f"Numeric value {rank}:", end=" ")
         print(val)
 
-    # -------------------------------------------------------------------------
-    # 2. TEXT PROCESSOR TESTLERİ
-    # -------------------------------------------------------------------------
-    print("Testing Text Processor")
+    print("\nTesting Text Processor...")
     text_proc = TextProcessor()
 
     print(f"Trying to validate input '42': {text_proc.validate(42)}")
@@ -180,19 +169,16 @@ if __name__ == "__main__":
 
     print("Extracting 1 value...")
     t_rank, t_val = text_proc.output()
-    print(f"Text value {t_rank}: {t_val}")
+    print(f"Text value {t_rank}: {t_val}\n")
 
-    # -------------------------------------------------------------------------
-    # 3. LOG PROCESSOR TESTLERİ
-    # -------------------------------------------------------------------------
-    print("Testing Log Processor.")
+    print("Testing Log Processor...")
     log_proc = LogProcessor()
 
     print(f"Trying to validate input 'Hello': {log_proc.validate('Hello')}")
 
     log_data = [
         {'log_level': 'NOTICE', 'log_message': 'Connection to server'},
-        {'log_level': 'ERROR', 'log_message': 'Unauthorized access!!!'}
+        {'log_level': 'ERROR', 'log_message': 'Unauthorized access!!'}
     ]
     print(f"Processing data: {log_data}")
     log_proc.ingest(log_data)
