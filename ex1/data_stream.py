@@ -4,7 +4,7 @@ import typing
 LogDict = dict[str, str]
 
 
-class DataProcessor(abc.ABC):  # Ana classımız
+class DataProcessor(abc.ABC):
     def __init__(self) -> None:
         self.storage: list[tuple[int, str]] = []
         self.counter: int = 0
@@ -165,55 +165,57 @@ class DataStream:
             print(f"{proc_name}: total {proc.counter} items processed,\
  remaining {len(proc.storage)} on processor")
 
+
 if __name__ == "__main__":
     print("=== Code Nexus - Data Stream ===")
-    print("Initialize Data Stream.. .")
-    
+    print("Initialize Data Stream...")
+
     stream_manager = DataStream()
-    
+
     print("== DataStream statistics ==")
     stream_manager.print_processors_stats()
-    
+
     print("Registering Numeric Processor")
     num_proc = NumericProcessor()
     stream_manager.register_processor(num_proc)
-    
+    text = "Telnet access! Use ssh instead"
     batch = [
-        'Hello world', 
-        [3.14, -1, 2.71], 
+        'Hello world',
+        [3.14, -1, 2.71],
         [
-            {'log_level': 'WARNING', 'log_message': 'Telnet access! Use ssh instead'}, 
+            {'log_level': 'WARNING', 'log_message': text},
             {'log_level': 'INFO', 'log_message': 'User wil is connected'}
-        ], 
-        42, 
+        ],
+        42,
         ['Hi', 'five']
     ]
-    
+
     print(f"Send first batch of data on stream: {batch}")
     stream_manager.process_stream(batch)
-    
+
     print("== DataStream statistics ==")
     stream_manager.print_processors_stats()
-    
+
     print("Registering other data processors")
     text_proc = TextProcessor()
     log_proc = LogProcessor()
     stream_manager.register_processor(text_proc)
     stream_manager.register_processor(log_proc)
-    
+
     print("Send the same batch again")
     stream_manager.process_stream(batch)
-    
+
     print("== DataStream statistics ==")
     stream_manager.print_processors_stats()
-    
-    print("Consume some elements from the data processors: Numeric 3, Text 2, Log 1")
+
+    print("Consume some elements from the data processors:\
+ Numeric 3, Text 2, Log 1")
     for _ in range(3):
         num_proc.output()
     for _ in range(2):
         text_proc.output()
     for _ in range(1):
         log_proc.output()
-        
+
     print("== DataStream statistics ==")
     stream_manager.print_processors_stats()

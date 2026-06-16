@@ -177,11 +177,12 @@ class DataStream:
                     break
 
             if not processed:
-                print(f"DataStream error -\n Can't process element in stream: {item}")
+                print(f"DataStream error -\n\
+ Can't process element in stream: {item}")
 
     def print_processors_stats(self) -> None:
         print("\n== DataStream statistics ==")
-        
+
         if not self.processors:
             print("No processor found, no data")
             return
@@ -191,7 +192,7 @@ class DataStream:
             proc_name = cls_name.replace("Processor", " Processor")
             print(f"{proc_name}: total {proc.counter} items processed, "
                   f"remaining {len(proc.storage)} on processor")
-    
+
     def output_pipeline(self, nb: int, plugin: ExportPlugin) -> None:
         for item in self.processors:
             output_list = []
@@ -200,7 +201,7 @@ class DataStream:
                 try:
                     output_list.append(item.output())
                 except IndexError:
-                    break            
+                    break
                 i += 1
             if output_list:
                 plugin.process_output(output_list)
@@ -209,30 +210,31 @@ class DataStream:
 if __name__ == "__main__":
     print("=== Code Nexus - Data Pipeline ===")
     print("Initialize Data Stream...\n")
-    
+
     stream_manager = DataStream()
     stream_manager.print_processors_stats()
-    
+
     print("\nRegistering Processors\n")
     num_proc = NumericProcessor()
     text_proc = TextProcessor()
     log_proc = LogProcessor()
-    
+
     stream_manager.register_processor(num_proc)
     stream_manager.register_processor(text_proc)
     stream_manager.register_processor(log_proc)
 
+    text = "Telnet access! Use ssh instead"
     batch1 = [
-        'Hello world', 
-        [3.14, -1, 2.71], 
+        'Hello world',
+        [3.14, -1, 2.71],
         [
-            {'log_level': 'WARNING', 'log_message': 'Telnet access! Use ssh instead'}, 
+            {'log_level': 'WARNING', 'log_message': text},
             {'log_level': 'INFO', 'log_message': 'User wil is connected'}
-        ], 
-        42, 
+        ],
+        42,
         ['Hi', 'five']
     ]
-    
+
     print(f"Send first batch of data on stream: {batch1}")
     stream_manager.process_stream(batch1)
     stream_manager.print_processors_stats()
@@ -242,17 +244,18 @@ if __name__ == "__main__":
     stream_manager.output_pipeline(3, csv_plugin)
     stream_manager.print_processors_stats()
 
+    text = "Certificate expires in 10 days"
     batch2 = [
-        21, 
-        ['I love AI', 'LLMs are wonderful', 'Stay healthy'], 
+        21,
+        ['I love AI', 'LLMs are wonderful', 'Stay healthy'],
         [
-            {'log_level': 'ERROR', 'log_message': '500 server crash'}, 
-            {'log_level': 'NOTICE', 'log_message': 'Certificate expires in 10 days'}
+            {'log_level': 'ERROR', 'log_message': '500 server crash'},
+            {'log_level': 'NOTICE', 'log_message': text}
         ],
-        [32, 42, 64, 84, 128, 168], 
+        [32, 42, 64, 84, 128, 168],
         'World hello'
     ]
-    
+
     print(f"Send another batch of data: {batch2}")
     stream_manager.process_stream(batch2)
     stream_manager.print_processors_stats()
