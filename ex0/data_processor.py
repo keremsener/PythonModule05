@@ -1,3 +1,16 @@
+# ************************************************************************* #
+#                                                                           #
+#                                                      :::      ::::::::    #
+#  data_processor.py                                 :+:      :+:    :+:    #
+#                                                  +:+ +:+         +:+      #
+#  By: ksener <ksener@student.42kocaeli.com.tr   +#+  +:+       +#+         #
+#                                              +#+#+#+#+#+   +#+            #
+#  Created: 2026/06/17 12:56:31 by ksener          #+#    #+#               #
+#  Updated: 2026/06/17 12:56:31 by ksener          ###   ########.fr        #
+#                                                                           #
+# ************************************************************************* #
+
+
 import abc
 import typing
 
@@ -139,12 +152,14 @@ if __name__ == "__main__":
     print("Testing Numeric Processor...")
     num_proc = NumericProcessor()
 
-    print(f"Trying to validate input '42': {num_proc.validate(42)}")
-    print(f"Trying to validate input 'Hello': {num_proc.validate('Hello')}")
+    test: typing.Any = 42
+    print(f"Trying to validate input '{test}': {num_proc.validate(test)}")
+    test = "Hello"
+    print(f"Trying to validate input '{test}': {num_proc.validate(test)}")
 
     print("Test invalid ingestion of string 'foo' without prior validation:")
     try:
-        num_proc.ingest("foo")  # type: ignore
+        num_proc.ingest("foo")
     except Exception as e:
         print(f"Got exception: {e}")
 
@@ -161,7 +176,8 @@ if __name__ == "__main__":
     print("\nTesting Text Processor...")
     text_proc = TextProcessor()
 
-    print(f"Trying to validate input '42': {text_proc.validate(42)}")
+    test = 61
+    print(f"Trying to validate input '{test}': {text_proc.validate(test)}")
 
     text_data = ['Hello', 'Nexus', 'World']
     print(f"Processing data: {text_data}")
@@ -174,7 +190,8 @@ if __name__ == "__main__":
     print("Testing Log Processor...")
     log_proc = LogProcessor()
 
-    print(f"Trying to validate input 'Hello': {log_proc.validate('Hello')}")
+    test = "Hello"
+    print(f"Trying to validate input {test}: {log_proc.validate(test)}")
 
     log_data = [
         {'log_level': 'NOTICE', 'log_message': 'Connection to server'},
